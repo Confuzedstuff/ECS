@@ -59,7 +59,7 @@ public abstract class Query
 
     public void LookupArches()
     {
-        var query = new QueryElements();
+        var query = new ArchQuery();
         foreach (var withType in GetWithTypes())
         {
             query.element.Add(With.Create(withType));

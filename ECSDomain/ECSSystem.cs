@@ -31,9 +31,9 @@ public abstract class ECSSystem
 
     public abstract void Init();
 
-    public QueryElements GetQuery()
+    public ArchQuery GetQuery()
     {
-        var query = new QueryElements();
+        var query = new ArchQuery();
         foreach (var withType in GetWithTypes())
         {
             query.element.Add(With.Create(withType));

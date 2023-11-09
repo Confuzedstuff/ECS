@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
 namespace ECSDomain;
-public class Without<T> : IQueryElement
+public class Without<T> : IArchQueryElement
     where T: struct
 
 {

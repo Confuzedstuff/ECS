@@ -1,5 +1,5 @@
 ﻿namespace ECSDomain;
-public class IndexComponent : Component<GIndex>
+public class IndexComponent : Component<EntityIndex>
 {
     public override void Spawn()
     {
@@ -10,7 +10,7 @@ public class IndexComponent : Component<GIndex>
         if (!expanded) return;
         for (var i = nextIndex - 1; i < elements.Length; i++)
         {
-            elements[i] = new GIndex(i, 0);
+            elements[i] = new EntityIndex(i, 0);
         }
     }
 
@@ -19,6 +19,6 @@ public class IndexComponent : Component<GIndex>
         nextIndex--;
         var temp = elements[index];
         elements[index] = elements[nextIndex];
-        elements[nextIndex] = new GIndex(temp.Index, temp.Generation + 1);
+        elements[nextIndex] = new EntityIndex(temp.Index, temp.Generation + 1);
     }
 }

@@ -5,15 +5,15 @@ namespace ECSDomain;
 
 public class With
 {
-    public static IQueryElement Create(Type type)
+    public static IArchQueryElement Create(Type type)
     {
         var withType = typeof(With<>).MakeGenericType(type);
         var cons = withType.GetConstructor(Array.Empty<Type>());
-        return cons.Invoke(new object[]{}) as IQueryElement;
+        return cons.Invoke(new object[]{}) as IArchQueryElement;
     }
 }
 
-public class With<T> : IQueryElement
+public class With<T> : IArchQueryElement
 where T: struct
 {
     public void Evaluate(List<Archetype> items)

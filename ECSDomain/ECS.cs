@@ -43,17 +43,17 @@ public class ECS
         throw new Exception($"Archetype not registered {globalId} ");
     }
     
-    public ref T GetEntityComponentRef<T>(in GEntity entity, out bool entityAlive)
+    public ref T GetEntityComponentRef<T>(in Entity entity, out bool entityAlive)
         where T : struct
     {
         var arch = GetArchetype(entity.EntityArchetype);
-        return ref arch.GetEntityComponents<T>(entity.GIndex, out entityAlive);
+        return ref arch.GetEntityComponents<T>(entity.EntityIndex, out entityAlive);
     }
 
-    public List<Archetype> GetValidArches(QueryElements queryElements)
+    public List<Archetype> GetValidArches(ArchQuery archQuery)
     {
         var validItems = archetypes.Values.ToList();
-        foreach (var element in queryElements.element)
+        foreach (var element in archQuery.element)
         {
             element.Evaluate(validItems);
         }
