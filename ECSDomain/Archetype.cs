@@ -8,7 +8,7 @@ namespace ECSDomain;
 public abstract class Archetype
 {
     public readonly GlobalId GlobalId;
-    public readonly Component<EntityIndex> indexes;
+    public readonly Component<GIndex> indexes;
     private readonly Mapping mapping;
     private readonly List<Component> components = new();
 
@@ -58,7 +58,7 @@ public abstract class Archetype
     }
 
 
-    public virtual EntityIndex Spawn(out int actualIndex)
+    public virtual GIndex Spawn(out int actualIndex)
     {
         foreach (var component in components)
         {
@@ -70,7 +70,7 @@ public abstract class Archetype
         return indexes.Last;
     }
 
-    public void Despawn(in EntityIndex toDespawn)
+    public void Despawn(in GIndex toDespawn)
     {
         if (ResolveActualEntityIndex(toDespawn, out var actualIndex))
         {
@@ -106,7 +106,7 @@ public abstract class Archetype
         return null;
     }
 
-    protected bool ResolveActualEntityIndex(in EntityIndex index, out int actualIndex)
+    protected bool ResolveActualEntityIndex(in GIndex index, out int actualIndex)
     {
         actualIndex = mapping.Get(index.Index);
         ref readonly var curr = ref indexes.GetReadOnly(actualIndex);
@@ -115,7 +115,7 @@ public abstract class Archetype
 
     public int Length => indexes.nextIndex;
     
-    public ref T GetEntityComponents<T>(in EntityIndex index, out bool entityAlive) where T : struct //TODO partial
+    public ref T GetEntityComponents<T>(in GIndex index, out bool entityAlive) where T : struct //TODO partial
     {
         entityAlive = ResolveActualEntityIndex(index, out var actualIndex);
         var component = GetComponent<T>();
