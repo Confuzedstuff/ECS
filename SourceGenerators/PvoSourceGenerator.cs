@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using System.Text;
@@ -9,32 +10,45 @@ namespace ECSSourceGenerator
     [Generator]
     public class PvoSourceGenerator : ISourceGenerator
     {
+        private readonly Dictionary<string, string> typeLookup = new Dictionary<string, string>()
+        {
+            { "int", "System.Int32" },
+            { "float", "System.Single" },
+            { "double", "System.Double" },
+        };
+
         public void Execute(GeneratorExecutionContext context)
         {
             var names = context.Compilation.SyntaxTrees.SelectMany(syntaxTree => syntaxTree.GetRoot().DescendantNodes())
-                .Where(x => x is StructDeclarationSyntax)
-                .Cast<StructDeclarationSyntax>()
+                .Where(x => x is ClassDeclarationSyntax)
+                .Cast<ClassDeclarationSyntax>()
                 .Where(c => c.BaseList?.ToString().Contains("IPvo") ?? false)
-                .Select(c => new
+                .Select(c =>
                 {
-                    Identifier = c.Identifier.Text,
-                    Type = c.BaseList.ToString().Split('<')[1].TrimEnd('>')
+                    var t = c.Identifier.Text;
+                    return new
+                    {
+                        Identifier =t.Substring(0, t.Length - 1),
+                        Type = c.BaseList.ToString().Split('<')[1].TrimEnd('>')
+                    };
                 })
                 .Distinct();
             ;
 
 
-            var sourceBuilder = new StringBuilder();
-            sourceBuilder.AppendLine("using System;");
             foreach (var name in names)
             {
+                var builder = new IndentBuilder();
+                builder.AppendLine("using System;");
                 var tostring = GetToString(name.Identifier);
 
                 var hashcode = name.Type == "int" ? "Value" : "Value.GetHashCode()";
-                sourceBuilder.Append(
-                    $@"
-public readonly partial struct {name.Identifier} : IEquatable<{name.Identifier}>
-{{
+                builder.AppendLine("#if DEBUG");
+                builder.AppendLine($"public readonly partial struct {name.Identifier} : IEquatable<{name.Identifier}>");
+                builder.Braces(() =>
+                {
+                    builder.AppendLine(
+                        $@"
     public readonly {name.Type} Value;
 
     public {name.Identifier}(in {name.Type} value)
@@ -60,13 +74,27 @@ public readonly partial struct {name.Identifier} : IEquatable<{name.Identifier}>
 
     {tostring}
 
-    // TODO public static implicit operator {name.Identifier}({name.Type} value) => new(value);
-}}
+    public static implicit operator {name.Identifier}({name.Type} value) => new(value);
+    public static implicit operator {name.Type}({name.Identifier} value) => value.Value;
 ");
+                });
+                builder.AppendLine("#endif");
+
+                context.AddSource($"{name.Identifier}PVO.g.cs", SourceText.From(builder.ToString(), Encoding.UTF8));
             }
 
 
-            context.AddSource("pvoSourceGenerator", SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
+            var b = new IndentBuilder();
+            b.AppendLine("#if !DEBUG");
+            foreach (var name in names)
+            {
+                var actualType = typeLookup[name.Type];
+                b.AppendLine($"global using {name.Identifier} = {actualType};");
+            }
+
+            b.AppendLine("#endif");
+
+            context.AddSource("GlobalUsings.g.cs", SourceText.From(b.ToString(), Encoding.UTF8));
         }
 
         private string GetToString(string identifier)

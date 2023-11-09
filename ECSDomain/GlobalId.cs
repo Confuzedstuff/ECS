@@ -1,4 +1,3 @@
-﻿public readonly partial struct GlobalId : IPvo<int>
+﻿internal class GlobalIds : IPvo<int>
 {
-    public static implicit operator GlobalId(int value) => new(value);
 }

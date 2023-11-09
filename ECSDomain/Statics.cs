@@ -2,5 +2,5 @@
 
 public static class Statics
 {
-    public static readonly GlobalId Null = new(0);
+    public static readonly GlobalId Null = 0;
 }
