@@ -12,7 +12,7 @@ public class ECS
     private readonly Dictionary<Type, Archetype> archetypes = new();
     private readonly Dictionary<GlobalId, Archetype> archetypesById = new();
 
-    private readonly List<BaseEcsSystem> systems = new();
+    private readonly List<ECSSystem> systems = new();
 
     private readonly MessageBuffers messageBuffers = new();
 
@@ -61,7 +61,7 @@ public class ECS
         return validItems;
     }
 
-    public void RegisterSystem(BaseEcsSystem system) => systems.Add(system);
+    public void RegisterSystem(ECSSystem system) => systems.Add(system);
 
     public void UpdateSystems(float delta)
     {

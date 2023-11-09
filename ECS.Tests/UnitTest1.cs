@@ -9,7 +9,7 @@ public class Tests
     [Test]
     public void Test1()
     {
-        var ecs = ECS.Create();
+        var ecs = ECS.Instance;
         var planetArch = ecs.GetArchitecture<TestPlanetArch>();
         var planet1 = planetArch.Spawn();
         var planet2 = planetArch.Spawn();

@@ -7,7 +7,11 @@ namespace ECSDomain;
 public abstract class ECSSystem
 {
     public ECS ecs; // TODO remove
-
+    public void _Init()
+    {
+        this.RegisterMessaging();
+        Init();
+    }
     public virtual void Update(in float delta)
     {
         

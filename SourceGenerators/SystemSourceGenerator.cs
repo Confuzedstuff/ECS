@@ -28,11 +28,6 @@ namespace ECSSourceGenerator
                             return false;
                         }
 
-                        if (bl.Contains("BaseEcsSystem"))
-                        {
-                            return true;
-                        }
-
                         if (bl.Contains("ECSSystem"))
                         {
                             return true;
