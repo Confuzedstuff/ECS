@@ -28,8 +28,8 @@ namespace ECSSourceGenerator
                     var t = c.Identifier.Text;
                     return new
                     {
-                        Identifier =t.Substring(0, t.Length - 1),
-                        Type = c.BaseList.ToString().Split('<')[1].TrimEnd('>')
+                        Identifier = t.Substring(0, t.Length - 1),
+                        Type = c.BaseList.ToString().Split('<')[1].Split('>')[0]
                     };
                 })
                 .Distinct();
@@ -45,6 +45,7 @@ namespace ECSSourceGenerator
                 var hashcode = name.Type == "int" ? "Value" : "Value.GetHashCode()";
                 builder.AppendLine("#if DEBUG");
                 builder.AppendLine($"public readonly partial struct {name.Identifier} : IEquatable<{name.Identifier}>");
+                builder.AppendLine($", IComparable<{name.Identifier}>");
                 builder.Braces(() =>
                 {
                     builder.AppendLine(
@@ -66,11 +67,19 @@ namespace ECSSourceGenerator
 
     public override bool Equals(object? obj) => obj is {name.Identifier} other && other.Value == Value;
 
-    //public int CompareTo({name.Identifier} other)
-    //{{
-    //    if (Value < other.Value) return -1;
-    //    return Value > other.Value ? 1 : 0;
-    //}}
+    public int CompareTo({name.Identifier} other)
+    {{
+        if (Value < other.Value) return -1;
+        return Value > other.Value ? 1 : 0;
+    }}
+
+   public static bool operator <({name.Identifier} left, {name.Identifier} right) => left.CompareTo(right) < 0;
+
+    public static bool operator >({name.Identifier} left, {name.Identifier} right) => left.CompareTo(right) > 0;
+
+    public static bool operator <=({name.Identifier} left, {name.Identifier} right) => left.CompareTo(right) <= 0;
+
+    public static bool operator >=({name.Identifier} left, {name.Identifier} right) => left.CompareTo(right) >= 0;
 
     {tostring}
 
