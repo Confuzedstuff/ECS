@@ -25,4 +25,5 @@ public readonly struct Option<T>
     }
 
     public static readonly Option<T> None = new();
+    public static implicit operator Option<T>(T value) => new(value);
 }
