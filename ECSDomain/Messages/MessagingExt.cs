@@ -5,7 +5,7 @@ using ECSDomain.Messages;
 namespace ECSDomain;
 public static class MessagingExt
 {
-    public static void RegisterMessaging(this object system)
+    public static void InjectMessaging(this object system)
     {
         RegisterReaders(system);
         RegisterWriters(system);

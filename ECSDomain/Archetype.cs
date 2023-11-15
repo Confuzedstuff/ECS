@@ -20,7 +20,7 @@ public abstract class Archetype
         indexes = ind;
         components.Add(indexes);
         mapping = new Mapping(ind);
-        this.RegisterMessaging();
+        this.InjectMessaging();
     }
 
     public void Init()
@@ -58,7 +58,7 @@ public abstract class Archetype
     }
 
 
-    public virtual EntityIndex Spawn(out int actualIndex)
+    public virtual EntityIndex BaseSpawn(out int actualIndex)
     {
         foreach (var component in components)
         {

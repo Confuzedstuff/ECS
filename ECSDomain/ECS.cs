@@ -5,7 +5,6 @@ using ECSDomain;
 using ECSDomain.Messages;
 
 namespace ECSDomain;
-
 public class ECS
 {
     public static readonly ECS Instance = new();
@@ -25,15 +24,15 @@ public class ECS
         archetypesById.Add(arch.GlobalId, arch);
         archetypes.Add(arch.GetType(), arch);
     }
-    
+
     public void UpdateSystemArches(ECSSystem system)
     {
         var query = system.GetQuery();
         var validItems = GetValidArches(query);
         system.SetArches(validItems);
     }
-    
-    public Archetype GetArchetype(in GlobalId globalId)
+
+    public Archetype GetArchetypeById(in GlobalId globalId)
     {
         if (archetypesById.TryGetValue(globalId, out var arch))
         {
@@ -42,11 +41,22 @@ public class ECS
 
         throw new Exception($"Archetype not registered {globalId} ");
     }
-    
+
+    public T GetArchetype<T>()
+        where T : Archetype
+    {
+        if (archetypes.TryGetValue(typeof(T), out var arch))
+        {
+            return (T) arch;
+        }
+
+        throw new Exception($"Archetype not registered {typeof(T).Name} ");
+    }
+
     public ref T GetEntityComponentRef<T>(in Entity entity, out bool entityAlive)
         where T : struct
     {
-        var arch = GetArchetype(entity.EntityArchetype);
+        var arch = GetArchetypeById(entity.EntityArchetype);
         return ref arch.GetEntityComponents<T>(entity.EntityIndex, out entityAlive);
     }
 
@@ -75,7 +85,7 @@ public class ECS
             }
             catch (Exception e)
             {
-               Console.WriteLine(e); // TODO use logger
+                Console.WriteLine(e); // TODO use logger
             }
         }
     }
@@ -101,5 +111,4 @@ public class ECS
     {
         return messageBuffers.GetBuffer<T>();
     }
-    
 }

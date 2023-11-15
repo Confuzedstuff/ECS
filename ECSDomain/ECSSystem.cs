@@ -3,24 +3,25 @@ using System.Collections.Generic;
 using ECSDomain;
 
 namespace ECSDomain;
-
 public abstract class ECSSystem
 {
     public ECS ecs; // TODO remove
+
     public void _Init()
     {
-        this.RegisterMessaging();
+        this.InjectArchetypes();
+        this.InjectMessaging();
         Init();
     }
+
     public virtual void Update(in float delta)
     {
-        
     }
-    
+
     public virtual void PostExecute(in float delta)
     {
-        
     }
+
     public abstract void Execute(in float delta);
 
     protected List<Archetype> arches;
@@ -31,7 +32,6 @@ public abstract class ECSSystem
 
     public virtual void Init()
     {
-        
     }
 
     public ArchQuery GetQuery()
@@ -49,4 +49,6 @@ public abstract class ECSSystem
     {
         arches = validItems;
     }
+
+
 }
