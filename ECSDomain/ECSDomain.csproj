@@ -7,6 +7,6 @@
         <RootNamespace>ECS</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\SourceGenerators\SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\ECSSourceGenerators\ECSSourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 </Project>

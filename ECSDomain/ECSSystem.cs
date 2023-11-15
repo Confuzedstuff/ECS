@@ -29,7 +29,10 @@ public abstract class ECSSystem
 
     public float delta;
 
-    public abstract void Init();
+    public virtual void Init()
+    {
+        
+    }
 
     public ArchQuery GetQuery()
     {
