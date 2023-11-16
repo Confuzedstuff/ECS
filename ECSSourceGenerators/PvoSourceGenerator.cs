@@ -40,7 +40,6 @@ namespace ECSSourceGenerator
             {
                 var builder = new IndentBuilder();
                 builder.AppendLine("using System;");
-                var tostring = GetToString(name.Identifier);
 
                 var hashcode = name.Type == "int" ? "Value" : "Value.GetHashCode()";
                 builder.AppendLine("#if DEBUG");
@@ -81,7 +80,7 @@ namespace ECSSourceGenerator
 
     public static bool operator >=({name.Identifier} left, {name.Identifier} right) => left.CompareTo(right) >= 0;
 
-    {tostring}
+    public override string ToString() => Value.ToString();
 
     public static implicit operator {name.Identifier}({name.Type} value) => new(value);
     public static implicit operator {name.Type}({name.Identifier} value) => value.Value;
@@ -104,19 +103,6 @@ namespace ECSSourceGenerator
             b.AppendLine("#endif");
 
             context.AddSource("GlobalUsings.g.cs", SourceText.From(b.ToString(), Encoding.UTF8));
-        }
-
-        private string GetToString(string identifier)
-        {
-            if (identifier == "GlobalId")
-            {
-                //return @"public override string ToString()=> this.GetStringId() ?? ""Unknown id "" + Value.ToString();";
-                return @"public override string ToString()=> Value.ToString();";
-            }
-            else
-            {
-                return @"public override string ToString()=> this.Value.ToString();";
-            }
         }
 
         public void Initialize(GeneratorInitializationContext context)
