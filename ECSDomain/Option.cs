@@ -1,9 +1,15 @@
 ﻿using System.Runtime.CompilerServices;
 
-public sealed class Option
+public readonly struct None
+{
+}
+
+public static class Option
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some<T>(in T t) where T : struct => new(t);
+
+    public static readonly None None = new();
 }
 
 public readonly struct Option<T>
@@ -24,6 +30,7 @@ public readonly struct Option<T>
         Value = default;
     }
 
-    public static readonly Option<T> None = new();
+    private static readonly Option<T> None = new();
     public static implicit operator Option<T>(T value) => new(value);
+    public static implicit operator Option<T>(in None none) => None;
 }
