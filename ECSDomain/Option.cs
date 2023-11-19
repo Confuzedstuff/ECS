@@ -13,7 +13,6 @@ public static class Option
 }
 
 public readonly struct Option<T>
-    where T : struct
 {
     public readonly bool HasValue;
     public readonly T Value;
