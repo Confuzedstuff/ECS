@@ -45,20 +45,20 @@ public abstract class Archetype
         }
     }
 
-    protected Component<T> RegisterComponent<T>() where T : struct
+    protected Component<T> RegisterComponent<T>() 
     {
         var component = new Component<T>();
         return RegisterComponentInstance(component);
     }
 
-    protected Component<T> RegisterComponentInstance<T>(Component<T> component) where T : struct
+    protected Component<T> RegisterComponentInstance<T>(Component<T> component) 
     {
         components.Add(component);
         return component;
     }
 
 
-    public virtual EntityIndex BaseSpawn(out int actualIndex)
+    protected virtual EntityIndex BaseSpawn(out int actualIndex)
     {
         foreach (var component in components)
         {
@@ -86,14 +86,14 @@ public abstract class Archetype
         }
     }
 
-    public bool HasComponent<T>() where T : struct
+    public bool HasComponent<T>() 
     {
         var component = GetComponent<T>();
 
         return component != null;
     }
 
-    public Component<T> GetComponent<T>() where T : struct
+    public Component<T> GetComponent<T>()
     {
         foreach (var component in components)
         {
@@ -119,6 +119,16 @@ public abstract class Archetype
     {
         entityAlive = ResolveActualEntityIndex(index, out var actualIndex);
         var component = GetComponent<T>();
+        if (entityAlive)
+        {
+            return ref component.Get(actualIndex);
+        }
+
+        return ref component.Get(0);
+    }
+    protected ref T GenericGet<T>(Entity entity, Component<T> component, out bool entityAlive)
+    {
+        entityAlive = ResolveActualEntityIndex(entity.EntityIndex, out var actualIndex);
         if (entityAlive)
         {
             return ref component.Get(actualIndex);

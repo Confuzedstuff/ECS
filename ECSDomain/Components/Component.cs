@@ -9,7 +9,7 @@ public abstract class Component // TODO rename to Buffer
 }
 
 public class Component<T> : Component
-    where T : struct
+   // where T : struct
 {
     public int nextIndex = 0; // guess this means length
     protected T[] elements = new T[1];

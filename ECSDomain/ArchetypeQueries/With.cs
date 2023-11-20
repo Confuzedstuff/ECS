@@ -14,7 +14,6 @@ public class With
 }
 
 public class With<T> : IArchQueryElement
-where T: struct
 {
     public void Evaluate(List<Archetype> items)
     {
