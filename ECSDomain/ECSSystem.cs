@@ -9,8 +9,8 @@ public abstract class ECSSystem
 
     public void _Init()
     {
-        this.InjectArchetypes();
-        this.InjectMessaging();
+        ecs.InjectArchetypes(this);
+        ecs.InjectMessaging(this);
         Init();
     }
 
@@ -49,6 +49,4 @@ public abstract class ECSSystem
     {
         arches = validItems;
     }
-
-
 }

@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Text;
 namespace ECSSourceGenerator
 {
     [Generator]
-    public class SystemSourceGenerator : ISourceGenerator
+    public class SystemSourceGenerator : ISourceGenerator // TODO reuse Query code to generate this
     {
         public void Execute(GeneratorExecutionContext context)
         {
@@ -59,7 +59,7 @@ namespace ECSSourceGenerator
 
                 if (updateEntityMethod is null)
                 {
-                    builder.AppendLine("// Update method not found"); //TODO copy imports
+                    builder.AppendLine("// Update method not found");
 
                     continue;
                 }
@@ -119,7 +119,6 @@ namespace ECSSourceGenerator
                                     }
                                 }
 
-                                builder.AppendLine("#if DEBUG");
                                 builder.AppendLine("UpdateEntity(");
                                 for (var i = 0; i < updateEntityMethod.ParameterList.Parameters.Count; i++)
                                 {
@@ -129,11 +128,6 @@ namespace ECSSourceGenerator
                                 }
 
                                 builder.AppendLine(");");
-
-                                builder.AppendLine("#else");
-                                var body = updateEntityMethod.Body.ToString().Trim();
-                                builder.AppendLine(body.Substring(1, body.Length - 2));
-                                builder.AppendLine("#endif");
                             });
                         });
                     });

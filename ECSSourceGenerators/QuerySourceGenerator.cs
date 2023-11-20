@@ -45,7 +45,6 @@ namespace ECSSourceGenerator
             {
                 var builder = new IndentBuilder();
                 builder.AppendLine("using System;");
-                builder.AppendLine("using Godot;");
 
                 var constructor = classDeclaration.Members
                     .Where(x => x is ConstructorDeclarationSyntax)
