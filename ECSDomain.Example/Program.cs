@@ -1,3 +1,13 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using ECSDomain;
 
-Console.WriteLine("Hello, World!");
+var ecs = ECS.Instance;
+
+ecs.Register(typeof(Program).Assembly);
+ecs.InitSystems();
+
+var isRunning = true;
+while (isRunning)
+{
+    var delta = 1 / 60f;
+    ecs.UpdateSystems(delta);
+}

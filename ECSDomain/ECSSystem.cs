@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using ECSDomain;
-
-namespace ECSDomain;
+﻿namespace ECSDomain;
 public abstract class ECSSystem
 {
-    public ECS ecs; // TODO remove
+    protected List<Archetype> arches;
+    public float delta;
 
-    public void _Init()
+    public ECS ecs { get; private set; }
+
+    public void OnRegister(ECS ecs)
     {
-        ecs.InjectArchetypes(this);
-        ecs.InjectMessaging(this);
-        Init();
+        this.ecs = ecs;
+        ecs.InjectAll(this);
     }
 
     public virtual void Update(in float delta)
@@ -24,11 +22,9 @@ public abstract class ECSSystem
 
     public abstract void Execute(in float delta);
 
-    protected List<Archetype> arches;
 
     public abstract Type[] GetWithTypes();
 
-    public float delta;
 
     public virtual void Init()
     {

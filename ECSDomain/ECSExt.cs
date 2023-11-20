@@ -3,6 +3,14 @@ using ECSDomain.Messages;
 namespace ECSDomain;
 public static class ECSExt
 {
+    public static void InjectAll(this ECS ecs, object target)
+    {
+        ecs.InjectArchetypes(target);
+        ecs.InjectMessaging(target);
+        ecs.InjectQueries(target);
+    }
+
+
     public static void InjectArchetypes(this ECS ecs, object target)
     {
         var currentType = target.GetType();
@@ -13,6 +21,18 @@ public static class ECSExt
         {
             var fungen = getArchMethod.MakeGenericMethod(fieldInfo.FieldType);
             var instance = fungen.Invoke(ecs, Array.Empty<object>());
+            fieldInfo.SetValue(target, instance);
+        }
+    }
+
+    public static void InjectQueries(this ECS ecs, object target)
+    {
+        var currentType = target.GetType();
+        var fields = currentType.GetAllFields();
+        var archFields = fields.Where(x => typeof(Query).IsAssignableFrom(x.FieldType));
+        foreach (var fieldInfo in archFields)
+        {
+            var instance = Activator.CreateInstance(fieldInfo.FieldType);
             fieldInfo.SetValue(target, instance);
         }
     }

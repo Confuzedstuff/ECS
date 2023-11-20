@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using ECSDomain;
 using ECSDomain.Messages;
 
@@ -90,13 +91,47 @@ public class ECS
         }
     }
 
+    public void Register(Assembly assembly)
+    {
+        RegisterEcsArchetypes(assembly);
+        RegisterEcsSystems(assembly);
+    }
+
     public void InitSystems()
     {
         foreach (var system in systems)
         {
-            system.ecs = this;
-            system._Init();
+            system.Init();
             UpdateSystemArches(system);
+        }
+    }
+
+    private void RegisterEcsSystems(Assembly assembly)
+    {
+        //TODO only detect un-registered systems
+
+        var ecsSystems = assembly.GetTypes()
+            .Where(t => typeof(ECSSystem).IsAssignableFrom(t))
+            .Where(t => t != typeof(ECSSystem));
+        foreach (var systemType in ecsSystems)
+        {
+            var system = (ECSSystem) Activator.CreateInstance(systemType)!;
+            RegisterSystem(system);
+            system.OnRegister(this);
+        }
+    }
+
+    private void RegisterEcsArchetypes(Assembly assembly)
+    {
+        //TODO only detect un-registered arches
+        var arches = assembly.GetTypes()
+            .Where(t => typeof(Archetype).IsAssignableFrom(t))
+            .Where(t => t != typeof(Archetype) && !t.IsAbstract);
+        foreach (var archType in arches)
+        {
+            var arch = (Archetype) Activator.CreateInstance(archType)!;
+            arch.Init();
+            RegisterArch(arch);
         }
     }
 
@@ -111,7 +146,4 @@ public class ECS
     {
         return messageBuffers.GetBuffer<T>();
     }
-    
-    
-
 }

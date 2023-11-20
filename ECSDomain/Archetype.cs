@@ -20,7 +20,7 @@ public abstract class Archetype
         indexes = ind;
         components.Add(indexes);
         mapping = new Mapping(ind);
-        ECS.Instance.InjectMessaging(this);
+        ECS.Instance.InjectAll(this);
     }
 
     public void Init()
