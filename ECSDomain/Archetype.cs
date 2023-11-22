@@ -1,31 +1,37 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ECSDomain.Messages;
 
 namespace ECSDomain;
+
 public abstract class Archetype
 {
     public readonly GlobalId GlobalId;
     public readonly Component<EntityIndex> indexes;
     private readonly Mapping mapping;
-    private readonly List<Component> components = new();
+    private FrozenDictionary<Type, Component> components;
+    private List<Component> initcomponents = new();
 
     protected Archetype(in GlobalId globalId)
     {
         GlobalId = globalId;
-        var ind = new IndexComponent();
 
-        indexes = ind;
-        components.Add(indexes);
-        mapping = new Mapping(ind);
+        indexes = new IndexComponent();
+        initcomponents.Add(indexes);
+        mapping = new Mapping((IndexComponent)indexes);
         ECS.Instance.InjectAll(this);
     }
 
     public void Init()
     {
         AutoRegisterComponents();
+        components = initcomponents
+                     .ToDictionary(k => k.GetComponentType(), v => v)
+                     .ToFrozenDictionary();
+        initcomponents = null;
     }
 
     private void AutoRegisterComponents()
@@ -45,22 +51,22 @@ public abstract class Archetype
         }
     }
 
-    protected Component<T> RegisterComponent<T>() 
+    protected Component<T> RegisterComponent<T>()
     {
         var component = new Component<T>();
         return RegisterComponentInstance(component);
     }
 
-    protected Component<T> RegisterComponentInstance<T>(Component<T> component) 
+    protected Component<T> RegisterComponentInstance<T>(Component<T> component)
     {
-        components.Add(component);
+        initcomponents.Add(component);
         return component;
     }
 
 
     protected virtual EntityIndex BaseSpawn(out int actualIndex)
     {
-        foreach (var component in components)
+        foreach (var component in components.Values)
         {
             component.Spawn();
         }
@@ -75,7 +81,7 @@ public abstract class Archetype
         if (ResolveActualEntityIndex(toDespawn, out var actualIndex))
         {
             mapping.DeSpawn(toDespawn.Index);
-            foreach (var component in components)
+            foreach (var component in components.Values)
             {
                 component.DeSpawn(actualIndex);
             }
@@ -86,25 +92,9 @@ public abstract class Archetype
         }
     }
 
-    public bool HasComponent<T>() 
-    {
-        var component = GetComponent<T>();
+    public bool HasComponent<T>() => components.TryGetValue(typeof(T), out _);
 
-        return component != null;
-    }
-
-    public Component<T> GetComponent<T>()
-    {
-        foreach (var component in components)
-        {
-            if (component.GetComponentType() == typeof(T))
-            {
-                return component as Component<T>;
-            }
-        }
-
-        return null;
-    }
+    public Component<T> GetComponent<T>() => (Component<T>) components[typeof(T)];
 
     protected bool ResolveActualEntityIndex(in EntityIndex index, out int actualIndex)
     {
@@ -114,7 +104,7 @@ public abstract class Archetype
     }
 
     public int Length => indexes.nextIndex;
-    
+
     public ref T GetEntityComponents<T>(in EntityIndex index, out bool entityAlive) where T : struct //TODO partial
     {
         entityAlive = ResolveActualEntityIndex(index, out var actualIndex);
@@ -126,6 +116,7 @@ public abstract class Archetype
 
         return ref component.Get(0);
     }
+
     protected ref T GenericGet<T>(Entity entity, Component<T> component, out bool entityAlive)
     {
         entityAlive = ResolveActualEntityIndex(entity.EntityIndex, out var actualIndex);

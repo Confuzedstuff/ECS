@@ -84,7 +84,7 @@ namespace ECSSourceGenerator
                         foreach (var parameter in pars)
                         {
                             var component = $"{parameter.Identifier.Text}Component";
-                            builder.AppendLine($"{component} = currentArch.{parameter.Identifier.ToString()};");
+                            builder.AppendLine($"{component} = currentArch.GetComponent<{parameter.Type.ToString()}>();");
                         }
                         
                     });
