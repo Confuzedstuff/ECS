@@ -5,7 +5,7 @@ public abstract class Query
 {
     protected int archIndex;
     protected int index;
-    protected Archetype currentArch; //TODO cache length
+    protected Archetype currentArch;
     protected Archetype[] arches;
 
     public Query()
@@ -18,7 +18,6 @@ public abstract class Query
     {
         archIndex = -1;
         currentArch = null;
-        //todo calc length
         NextArch();
         index = -1;
     }
@@ -66,7 +65,5 @@ public abstract class Query
         }
 
         arches = ECS.Instance.GetValidArches(query).ToArray();
-        // look at types
-        // generate query
     }
 }
