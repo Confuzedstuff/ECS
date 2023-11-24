@@ -43,63 +43,69 @@ namespace ECSSourceGenerator
 
             foreach (var classDeclaration in classes)
             {
-                var builder = new IndentBuilder();
-                builder.AppendLine("using System;");
-
                 var constructor = classDeclaration.Members
                     .Where(x => x is ConstructorDeclarationSyntax)
                     .Cast<ConstructorDeclarationSyntax>()
                     .FirstOrDefault(x => x.Identifier.Text == classDeclaration.Identifier.Text);
-                builder.AppendLine($"//{classDeclaration.Identifier.Text}");
-
-                builder.AppendLine($"public sealed partial class {classDeclaration.Identifier.Text}");
-                builder.Braces(() =>
+                var builder = new IndentBuilder();
+                if (constructor is null)
                 {
-                    builder.AppendLine($"public {classDeclaration.Identifier.Text}()");
-                    builder.Braces(() => { });
+                    builder.AppendLine($"// {classDeclaration.Identifier.Text} ERROR missing constructor");
+                    continue;
+                }
 
-                    if (constructor is null)
-                    {
-                        builder.AppendLine($"// ERROR missing constructor");
-                        return;
-                    }
-
-                    var pars = constructor.ParameterList.Parameters;
-                    builder.AppendLine("protected override Type[] GetWithTypes()");
-                    builder.Braces(() =>
-                    {
-                        builder.AppendLine(@"return new Type[]");
-                        builder.Braces(() =>
-                        {
-                            foreach (var parameter in pars)
-                            {
-                                builder.AppendLine($"typeof({parameter.Type}),");
-                            }
-                        });
-                        builder.AppendLine(@";");
-                    });
-                    builder.AppendLine("protected override void LookupArchComponents()");
-                    builder.Braces(() =>
-                    {
-                        foreach (var parameter in pars)
-                        {
-                            var component = $"{parameter.Identifier.Text}Component";
-                            builder.AppendLine($"{component} = currentArch.GetComponent<{parameter.Type.ToString()}>();");
-                        }
-                        
-                    });
-                    
-                    foreach (var parameter in pars)
-                    {
-                        var component = $"{parameter.Identifier.Text}Component";
-                        builder.AppendLine(
-                            $"private Component<{parameter.Type.ToString()}> {component};");
-                        builder.AppendLine(
-                            $"public ref {parameter.Type.ToString()} {parameter.Identifier.Text} => ref {component}.Get(index);");
-                    }
-                });
+                CreateQuery(builder, classDeclaration.Identifier.Text, constructor.ParameterList.Parameters, true);
                 context.AddSource(classDeclaration.Identifier.Text.Trim() + "Generated", SourceText.From(builder.ToString(), Encoding.UTF8));
             }
+        }
+
+        public static void CreateQuery(IndentBuilder builder, string queryIdentifier, SeparatedSyntaxList<ParameterSyntax> parameters, bool isPartial)
+        {
+            builder.AppendLine("using System;");
+
+
+            builder.AppendLine($"//{queryIdentifier}");
+
+            var partial = isPartial ? "partial" : "";
+            var baseClass  = isPartial ? "" : ": Query";
+            builder.AppendLine($"public sealed {partial} class {queryIdentifier} {baseClass}");
+            builder.Braces(() =>
+            {
+                builder.AppendLine($"public {queryIdentifier}()");
+                builder.Braces(() => { });
+                
+                builder.AppendLine("public override Type[] GetWithTypes()");
+                builder.Braces(() =>
+                {
+                    builder.AppendLine(@"return new Type[]");
+                    builder.Braces(() =>
+                    {
+                        foreach (var parameter in parameters)
+                        {
+                            builder.AppendLine($"typeof({parameter.Type}),");
+                        }
+                    });
+                    builder.AppendLine(@";");
+                });
+                builder.AppendLine("protected override void LookupArchComponents()");
+                builder.Braces(() =>
+                {
+                    foreach (var parameter in parameters)
+                    {
+                        var component = $"{parameter.Identifier.Text}Component";
+                        builder.AppendLine($"{component} = currentArch.GetComponent<{parameter.Type.ToString()}>();");
+                    }
+                });
+
+                foreach (var parameter in parameters)
+                {
+                    var component = $"{parameter.Identifier.Text}Component";
+                    builder.AppendLine(
+                        $"private Component<{parameter.Type.ToString()}> {component};");
+                    builder.AppendLine(
+                        $"public ref {parameter.Type.ToString()} {parameter.Identifier.Text} => ref {component}.Get(_index);");
+                }
+            });
         }
     }
 }

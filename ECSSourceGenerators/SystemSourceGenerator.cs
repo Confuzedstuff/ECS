@@ -52,6 +52,7 @@ namespace ECSSourceGenerator
 
                 builder.AppendLine($"//{classDeclaration.Identifier.Text}");
 
+
                 var updateEntityMethod = classDeclaration.Members
                     .Where(x => x is MethodDeclarationSyntax)
                     .Cast<MethodDeclarationSyntax>()
@@ -64,71 +65,33 @@ namespace ECSSourceGenerator
                     continue;
                 }
 
+                var queryIdentifier = classDeclaration.Identifier.Text + "Query";
+                var parameters = updateEntityMethod.ParameterList.Parameters;
+                QuerySourceGenerator.CreateQuery(builder, queryIdentifier, parameters, false);
                 var visibility = classDeclaration.Modifiers.First(x => new List<string> { "public", "private", "internal" }.Contains(x.Text.Trim()));
                 builder.AppendLine($"{visibility} sealed partial class {classDeclaration.Identifier.Text}");
                 builder.Braces(() =>
                 {
-                    builder.AppendLine("public override Type[] GetWithTypes()");
-                    builder.Braces(() =>
-                    {
-                        builder.AppendLine(@"return new Type[]");
-                        builder.Braces(() =>
-                        {
-                            for (var i = 0; i < updateEntityMethod.ParameterList.Parameters.Count; i++)
-                            {
-                                var parameter = updateEntityMethod.ParameterList.Parameters[i];
-                                builder.AppendLine($"typeof({parameter.Type}),");
-                            }
-                        });
-                        builder.AppendLine(@";");
-                    });
+                    builder.AppendLine($"private {queryIdentifier} query;");
+                    builder.AppendLine("public override Type[] GetWithTypes()=> query.GetWithTypes();");
                     builder.AppendLine("public override void Execute(in float delta)");
                     builder.Braces(() =>
                     {
                         builder.AppendLine("this.delta = delta;");
-                        builder.AppendLine("for (var iarch = 0; iarch < arches.Count(); iarch++)");
+                        builder.AppendLine("query.Reset();");
+                        builder.AppendLine("while(query.Next())");
                         builder.Braces(() =>
                         {
-                            builder.AppendLine($"var arch = arches[iarch];");
-                            for (var i = 0; i < updateEntityMethod.ParameterList.Parameters.Count; i++)
+                            builder.AppendLine("UpdateEntity(");
+
+                            for (var index = 0; index < parameters.Count; index++)
                             {
-                                var parameter = updateEntityMethod.ParameterList.Parameters[i];
-                                builder.AppendLine($"var component{i} = arch.GetComponent<{parameter.Type}>();");
-                                builder.AppendLine($"var component{i}Elements = component{i}.Elements;");
-                                if (parameter.Type.ToString().Contains("GlobalId"))
-                                {
-                                    builder.AppendLine($"ref var /*{parameter.Type}*/ {parameter.Identifier.Text} = ref component{i}Elements[0];");
-                                }
+                                var parameter = parameters[index];
+                                var comma = index == updateEntityMethod.ParameterList.Parameters.Count - 1 ? "" : ",";
+                                builder.AppendLine($"{parameter.Modifiers.ToString()} query.{parameter.Identifier.Text}{comma}");
                             }
 
-                            if (updateEntityMethod.ParameterList.Parameters.Any())
-                            {
-                                builder.AppendLine($"var nAlive = component0.nextIndex;");
-                            }
-
-                            builder.AppendLine("for (var iitem = 0; iitem < nAlive; iitem++)");
-                            builder.Braces(() =>
-                            {
-                                for (var i = 0; i < updateEntityMethod.ParameterList.Parameters.Count; i++)
-                                {
-                                    var parameter = updateEntityMethod.ParameterList.Parameters[i];
-                                    if (!parameter.Type.ToString().Contains("GlobalId"))
-                                    {
-                                        builder.AppendLine(
-                                            $"ref var /*{parameter.Type}*/ {parameter.Identifier.Text} = ref component{i}Elements[iitem];");
-                                    }
-                                }
-
-                                builder.AppendLine("UpdateEntity(");
-                                for (var i = 0; i < updateEntityMethod.ParameterList.Parameters.Count; i++)
-                                {
-                                    var comma = i == updateEntityMethod.ParameterList.Parameters.Count - 1 ? "" : ",";
-                                    var parameter = updateEntityMethod.ParameterList.Parameters[i];
-                                    builder.AppendLine($"{parameter.Modifiers.ToString()} {parameter.Identifier.Text}{comma}");
-                                }
-
-                                builder.AppendLine(");");
-                            });
+                            builder.AppendLine(");");
                         });
                     });
                 });

@@ -4,7 +4,7 @@ using ECSDomain;
 public abstract class Query
 {
     protected int archIndex;
-    protected int index;
+    protected int _index;
     protected Archetype currentArch;
     protected Archetype[] arches;
 
@@ -19,13 +19,13 @@ public abstract class Query
         archIndex = -1;
         currentArch = null;
         NextArch();
-        index = -1;
+        _index = -1;
     }
 
     public bool Next()
     {
-        index++;
-        if (index == currentArch.Length)
+        _index++;
+        if (_index == currentArch.Length)
         {
             bool hasNextArch;
             do
@@ -45,7 +45,7 @@ public abstract class Query
 
     private bool NextArch()
     {
-        index = 0;
+        _index = 0;
         archIndex++;
         if (archIndex == arches.Length) return false;
         currentArch = arches[archIndex];
@@ -53,7 +53,7 @@ public abstract class Query
         return true;
     }
 
-    protected abstract Type[] GetWithTypes();
+    public abstract Type[] GetWithTypes();
     protected abstract void LookupArchComponents();
 
     public void LookupArches()
