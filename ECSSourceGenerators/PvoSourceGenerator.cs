@@ -10,13 +10,6 @@ namespace ECSSourceGenerator
     [Generator]
     public class PvoSourceGenerator : ISourceGenerator
     {
-        private readonly Dictionary<string, string> typeLookup = new Dictionary<string, string>()
-        {
-            { "int", "System.Int32" },
-            { "float", "System.Single" },
-            { "double", "System.Double" },
-        };
-
         public void Execute(GeneratorExecutionContext context)
         {
             var names = context.Compilation.SyntaxTrees.SelectMany(syntaxTree => syntaxTree.GetRoot().DescendantNodes())
@@ -42,7 +35,6 @@ namespace ECSSourceGenerator
                 builder.AppendLine("using System;");
 
                 var hashcode = name.Type == "int" ? "Value" : "Value.GetHashCode()";
-                builder.AppendLine("#if DEBUG");
                 builder.AppendLine($"public readonly partial struct {name.Identifier} : IEquatable<{name.Identifier}>");
                 builder.AppendLine($", IComparable<{name.Identifier}>");
                 builder.Braces(() =>
@@ -86,23 +78,9 @@ namespace ECSSourceGenerator
     public static implicit operator {name.Type}({name.Identifier} value) => value.Value;
 ");
                 });
-                builder.AppendLine("#endif");
 
                 context.AddSource($"{name.Identifier}PVO.g.cs", SourceText.From(builder.ToString(), Encoding.UTF8));
             }
-
-
-            var b = new IndentBuilder();
-            b.AppendLine("#if !DEBUG");
-            foreach (var name in names)
-            {
-                var actualType = typeLookup[name.Type];
-                b.AppendLine($"global using {name.Identifier} = {actualType};");
-            }
-
-            b.AppendLine("#endif");
-
-            context.AddSource("GlobalUsings.g.cs", SourceText.From(b.ToString(), Encoding.UTF8));
         }
 
         public void Initialize(GeneratorInitializationContext context)
