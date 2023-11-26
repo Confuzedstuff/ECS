@@ -80,7 +80,7 @@ public class ECS
         {
             try
             {
-                system.Update(delta);
+                system.Update();
                 system.Execute(delta);
                 system.PostExecute(delta);
             }

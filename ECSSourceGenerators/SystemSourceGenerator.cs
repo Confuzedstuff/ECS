@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -58,43 +59,52 @@ namespace ECSSourceGenerator
                     .Cast<MethodDeclarationSyntax>()
                     .FirstOrDefault(x => x.Identifier.Text == "UpdateEntity");
 
-                if (updateEntityMethod is null)
-                {
-                    builder.AppendLine("// Update method not found");
 
-                    continue;
-                }
+                var hasUpdateEntityMethod = updateEntityMethod != null;
 
-                var queryIdentifier = classDeclaration.Identifier.Text + "Query";
-                var parameters = updateEntityMethod.ParameterList.Parameters;
-                QuerySourceGenerator.CreateQuery(builder, queryIdentifier, parameters, false);
-                var visibility = classDeclaration.Modifiers.First(x => new List<string> { "public", "private", "internal" }.Contains(x.Text.Trim()));
+
+                var visibility =
+                    classDeclaration.Modifiers.First(x => new List<string> { "public", "private", "internal" }.Contains(x.Text.Trim()));
                 builder.AppendLine($"{visibility} sealed partial class {classDeclaration.Identifier.Text}");
                 builder.Braces(() =>
                 {
-                    builder.AppendLine($"private {queryIdentifier} query;");
-                    builder.AppendLine("public override Type[] GetWithTypes()=> query.GetWithTypes();");
-                    builder.AppendLine("public override void Execute(in float delta)");
-                    builder.Braces(() =>
+                    if (hasUpdateEntityMethod)
                     {
-                        builder.AppendLine("this.delta = delta;");
-                        builder.AppendLine("query.Reset();");
-                        builder.AppendLine("while(query.Next())");
+                        var queryIdentifier = classDeclaration.Identifier.Text + "Query";
+                        var parameters = updateEntityMethod.ParameterList.Parameters;
+                        QuerySourceGenerator.CreateQuery(builder, queryIdentifier, parameters, false);
+                        builder.AppendLine($"private {queryIdentifier} query;");
+                        builder.AppendLine("public override Type[] GetWithTypes() => query.GetWithTypes();");
+                        builder.AppendLine("public override void Execute(in float delta)");
                         builder.Braces(() =>
                         {
-                            builder.AppendLine("UpdateEntity(");
-
-                            for (var index = 0; index < parameters.Count; index++)
+                            builder.AppendLine("this.delta = delta;");
+                            builder.AppendLine("query.Reset();");
+                            builder.AppendLine("while(query.Next())");
+                            builder.Braces(() =>
                             {
-                                var parameter = parameters[index];
-                                var comma = index == updateEntityMethod.ParameterList.Parameters.Count - 1 ? "" : ",";
-                                builder.AppendLine($"{parameter.Modifiers.ToString()} query.{parameter.Identifier.Text}{comma}");
-                            }
+                                builder.AppendLine("UpdateEntity(");
 
-                            builder.AppendLine(");");
+                                for (var index = 0; index < parameters.Count; index++)
+                                {
+                                    var parameter = parameters[index];
+                                    var comma = index == updateEntityMethod.ParameterList.Parameters.Count - 1 ? "" : ",";
+                                    builder.AppendLine($"{parameter.Modifiers.ToString()} query.{parameter.Identifier.Text}{comma}");
+                                }
+
+                                builder.AppendLine(");");
+                            });
                         });
-                    });
+                    }
+                    else
+                    {
+                        builder.AppendLine("// Update method not found");
+                        builder.AppendLine("public override Type[] GetWithTypes() => Array.Empty<Type>();");
+                        builder.AppendLine("public override void Execute(in float delta)");
+                        builder.Braces(() => { builder.AppendLine("this.delta = delta;"); });
+                    }
                 });
+
                 context.AddSource(classDeclaration.Identifier.Text.Trim() + "Generated", SourceText.From(builder.ToString(), Encoding.UTF8));
             }
         }

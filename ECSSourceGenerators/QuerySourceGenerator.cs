@@ -53,7 +53,7 @@ namespace ECSSourceGenerator
                     builder.AppendLine($"// {classDeclaration.Identifier.Text} ERROR missing constructor");
                     continue;
                 }
-
+                builder.AppendLine("using System;");
                 CreateQuery(builder, classDeclaration.Identifier.Text, constructor.ParameterList.Parameters, true);
                 context.AddSource(classDeclaration.Identifier.Text.Trim() + "Generated", SourceText.From(builder.ToString(), Encoding.UTF8));
             }
@@ -61,7 +61,6 @@ namespace ECSSourceGenerator
 
         public static void CreateQuery(IndentBuilder builder, string queryIdentifier, SeparatedSyntaxList<ParameterSyntax> parameters, bool isPartial)
         {
-            builder.AppendLine("using System;");
 
 
             builder.AppendLine($"//{queryIdentifier}");

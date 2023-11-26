@@ -12,7 +12,7 @@ public abstract class ECSSystem
         ecs.InjectAll(this);
     }
 
-    public virtual void Update(in float delta)
+    public virtual void Update()
     {
     }
 
