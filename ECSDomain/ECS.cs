@@ -8,7 +8,6 @@ using ECSDomain.Messages;
 namespace ECSDomain;
 public class ECS
 {
-    public static readonly ECS Instance = new();
     private readonly Dictionary<Type, Archetype> archetypes = new();
     private readonly Dictionary<GlobalId, Archetype> archetypesById = new();
 
@@ -130,7 +129,7 @@ public class ECS
         foreach (var archType in arches)
         {
             var arch = (Archetype) Activator.CreateInstance(archType)!;
-            arch.Init();
+            arch.Init(this);
             RegisterArch(arch);
         }
     }

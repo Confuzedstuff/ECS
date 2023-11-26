@@ -22,11 +22,11 @@ public abstract class Archetype
         indexes = new IndexComponent();
         initcomponents.Add(indexes);
         mapping = new Mapping((IndexComponent)indexes);
-        ECS.Instance.InjectAll(this);
     }
 
-    public void Init()
+    public void Init(ECS ecs)
     {
+        ecs.InjectAll(this);
         AutoRegisterComponents();
         components = initcomponents
                      .ToDictionary(k => k.GetComponentType(), v => v)

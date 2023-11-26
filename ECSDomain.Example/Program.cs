@@ -1,6 +1,6 @@
 ﻿using ECSDomain;
 
-var ecs = ECS.Instance;
+var ecs = new ECS();
 
 ecs.Register(typeof(Program).Assembly);
 ecs.InitSystems();

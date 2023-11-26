@@ -32,7 +32,8 @@ public static class ECSExt
         var archFields = fields.Where(x => typeof(Query).IsAssignableFrom(x.FieldType));
         foreach (var fieldInfo in archFields)
         {
-            var instance = Activator.CreateInstance(fieldInfo.FieldType);
+            var instance = (Query)Activator.CreateInstance(fieldInfo.FieldType);
+            instance.Init(ecs);
             fieldInfo.SetValue(target, instance);
         }
     }

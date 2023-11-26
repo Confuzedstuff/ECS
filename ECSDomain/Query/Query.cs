@@ -8,9 +8,9 @@ public abstract class Query
     protected Archetype currentArch;
     protected Archetype[] arches;
 
-    public Query()
+    public void Init(ECS ecs)
     {
-        LookupArches();
+        LookupArches(ecs);
         Reset();
     }
 
@@ -56,7 +56,7 @@ public abstract class Query
     public abstract Type[] GetWithTypes();
     protected abstract void LookupArchComponents();
 
-    public void LookupArches()
+    public void LookupArches(ECS ecs)
     {
         var query = new ArchQuery();
         foreach (var withType in GetWithTypes())
@@ -64,6 +64,6 @@ public abstract class Query
             query.element.Add(With.Create(withType));
         }
 
-        arches = ECS.Instance.GetValidArches(query).ToArray();
+        arches = ecs.GetValidArches(query).ToArray();
     }
 }
