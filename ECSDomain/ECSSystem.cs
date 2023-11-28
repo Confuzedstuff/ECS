@@ -1,6 +1,7 @@
 ﻿namespace ECSDomain;
 public abstract class ECSSystem
 {
+    public bool Enabled = true;
     protected List<Archetype> arches;
     public float delta;
 

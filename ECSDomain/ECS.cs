@@ -79,6 +79,7 @@ public class ECS
         {
             try
             {
+                if (!system.Enabled) continue;
                 system.Update();
                 system.Execute(delta);
                 system.PostExecute(delta);

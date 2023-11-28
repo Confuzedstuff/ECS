@@ -7,4 +7,7 @@ public readonly struct EntityIndex(in int index, in int generation) : IEquatable
     public override bool Equals(object? obj) => obj is EntityIndex other && Equals(other);
     public override int GetHashCode() => HashCode.Combine(Index, Generation);
     public override string ToString() => $"{Index}:{Generation}";
+    public static bool operator ==(EntityIndex left, EntityIndex right) => left.Index == right.Index && left.Generation == right.Generation;
+
+    public static bool operator !=(EntityIndex left, EntityIndex right) => !(left == right);
 }
