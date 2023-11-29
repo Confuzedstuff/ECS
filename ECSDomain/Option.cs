@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿
+using System.Runtime.CompilerServices;
 
 public readonly struct None
 {
@@ -30,6 +31,10 @@ public readonly struct Option<T>
     }
 
     private static readonly Option<T> None = new();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Option<T>(T value) => new(value);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Option<T>(in None none) => None;
 }

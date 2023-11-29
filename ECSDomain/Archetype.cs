@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Frozen;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Frozen;
 using System.Reflection;
-using ECSDomain.Messages;
 
 namespace ECSDomain;
-
-public abstract class Archetype
+public abstract partial class Archetype
 {
     public readonly GlobalId GlobalId;
     public readonly Component<EntityIndex> indexes;
@@ -21,7 +16,7 @@ public abstract class Archetype
 
         indexes = new IndexComponent();
         initcomponents.Add(indexes);
-        mapping = new Mapping((IndexComponent)indexes);
+        mapping = new Mapping((IndexComponent) indexes);
     }
 
     public void Init(ECS ecs)
@@ -29,8 +24,8 @@ public abstract class Archetype
         ecs.InjectAll(this);
         AutoRegisterComponents();
         components = initcomponents
-                     .ToDictionary(k => k.GetComponentType(), v => v)
-                     .ToFrozenDictionary();
+            .ToDictionary(k => k.GetComponentType(), v => v)
+            .ToFrozenDictionary();
         initcomponents = null;
     }
 

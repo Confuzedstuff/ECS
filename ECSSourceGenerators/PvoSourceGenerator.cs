@@ -33,6 +33,8 @@ namespace ECSSourceGenerator
             {
                 var builder = new IndentBuilder();
                 builder.AppendLine("using System;");
+                builder.AppendLine("using System.Runtime.CompilerServices;");
+                
 
                 var hashcode = name.Type == "int" ? "Value" : "Value.GetHashCode()";
                 builder.AppendLine($"public readonly partial struct {name.Identifier} : IEquatable<{name.Identifier}>");
@@ -74,7 +76,10 @@ namespace ECSSourceGenerator
 
     public override string ToString() => Value.ToString();
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator {name.Identifier}({name.Type} value) => new(value);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]    
     public static implicit operator {name.Type}({name.Identifier} value) => value.Value;
 ");
                 });
