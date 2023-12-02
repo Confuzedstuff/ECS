@@ -91,6 +91,16 @@ public abstract partial class Archetype
 
     public Component<T> GetComponent<T>() => (Component<T>) components[typeof(T)];
 
+    public Component<T>? TryGetComponent<T>()
+    {
+        if(components.TryGetValue(typeof(T), out var component))
+        {
+            return (Component<T>) components[typeof(T)];
+        }
+
+        return null;
+    }
+
     protected bool ResolveActualEntityIndex(in EntityIndex index, out int actualIndex)
     {
         actualIndex = mapping.Get(index.Index);
